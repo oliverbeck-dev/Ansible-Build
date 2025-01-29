@@ -176,3 +176,15 @@ scrape_configs:
     static_configs:
       - targets: ['n8n.sozialinfo.ch']
 {% endif %}
+{% if pushgateway_proxy_basic_auth_username is defined %}
+  - job_name: pushgateway
+    metrics_path: "/pushgateway/metrics"
+    scrape_interval: 30s
+    honor_labels: true
+    scheme: https
+    basic_auth:
+      username: {{ pushgateway_proxy_basic_auth_username }}
+      password: {{ pushgateway_proxy_basic_auth_password }}
+    static_configs:
+      - targets: {{ prometheus_hosts | map('extract', hostvars) | json_query('[*].nginx_proxies[?exporter!=null && contains(exporter, `pushgateway`)].src_hostname') | flatten }}
+{% endif %}
